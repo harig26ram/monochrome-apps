@@ -19,7 +19,9 @@ jobs:
         run: bun install
 
       - name: Sync Capacitor
-        run: bunx cap sync ios
+        run: |
+          mkdir -p ios/App/App/public
+          bunx cap sync ios
 
       - name: Build unsigned archive
         run: |

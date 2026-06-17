@@ -24,7 +24,9 @@ jobs:
         run: bun install
 
       - name: Sync Capacitor
-        run: bunx cap sync android
+        run: |
+          mkdir -p android/app/src/main/assets
+          bunx cap sync android
 
       - name: Build unsigned APK
         run: |
