@@ -1,5 +1,7 @@
 package tf.monochrome.app;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.webkit.WebView;
 import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.WebViewListener;
@@ -33,5 +35,48 @@ public class MainActivity extends BridgeActivity {
                 );
             }
         });
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        if (intent != null && Intent.ACTION_VIEW.equals(intent.getAction())) {
+            Uri data = intent.getData();
+            if (data != null && "monochrome.tf".equals(data.getHost())) {
+                String callbackUrl = data.toString();
+                try {
+                    com.getcapacitor.Bridge b = bridge;
+                    if (b != null && b.getWebView() != null) {
+                        b.getWebView().post(() -> {
+                            b.getWebView().evaluateJavascript(
+                                "window.location.href = " + jsonQuote(callbackUrl) + ";",
+                                null
+                            );
+                        });
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private static String jsonQuote(String s) {
+        StringBuilder sb = new StringBuilder("\"");
+        for (char c : s.toCharArray()) {
+            switch (c) {
+                case '"': sb.append("\\\""); break;
+                case '\\': sb.append("\\\\"); break;
+                case '\n': sb.append("\\n"); break;
+                case '\r': sb.append("\\r"); break;
+                case '\t': sb.append("\\t"); break;
+                default:
+                    if (c < 0x20) sb.append(String.format("\\u%04x", (int) c));
+                    else sb.append(c);
+            }
+        }
+        sb.append("\"");
+        return sb.toString();
     }
 }
