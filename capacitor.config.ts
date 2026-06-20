@@ -6,7 +6,15 @@ const config: CapacitorConfig = {
   webDir: 'www',
   server: {
     url: 'https://monochrome.tf',
-    allowNavigation: ['*.monochrome.tf'],
+    allowNavigation: [
+      '*.monochrome.tf',
+      'accounts.google.com',
+      '*.google.com',
+      'discord.com',
+      '*.discord.com',
+      'github.com',
+      '*.github.com',
+    ],
     errorPath: 'index.html',
   },
   assets: {
