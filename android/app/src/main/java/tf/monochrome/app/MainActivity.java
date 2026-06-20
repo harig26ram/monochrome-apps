@@ -2,7 +2,10 @@ package tf.monochrome.app;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.WebViewListener;
 
@@ -35,6 +38,54 @@ public class MainActivity extends BridgeActivity {
                 );
             }
         });
+
+        final WebView webView = bridge.getWebView();
+        if (webView != null) {
+            final WebViewClient originalClient = webView.getWebViewClient();
+            webView.setWebViewClient(new WebViewClient() {
+                @Override
+                public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                    Uri url = request.getUrl();
+                    String host = url.getHost();
+                    if (host != null && isOAuthDomain(host)) {
+                        return false;
+                    }
+                    return originalClient.shouldOverrideUrlLoading(view, request);
+                }
+
+                @Override
+                public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
+                    originalClient.onPageStarted(view, url, favicon);
+                }
+
+                @Override
+                public void onPageFinished(WebView view, String url) {
+                    originalClient.onPageFinished(view, url);
+                }
+
+                @Override
+                public void onReceivedError(WebView view, WebResourceRequest request, android.webkit.WebResourceError error) {
+                    originalClient.onReceivedError(view, request, error);
+                }
+
+                @Override
+                public void onReceivedHttpError(WebView view, WebResourceRequest request, android.webkit.WebResourceResponse errorResponse) {
+                    originalClient.onReceivedHttpError(view, request, errorResponse);
+                }
+            });
+        }
+    }
+
+    private static boolean isOAuthDomain(String host) {
+        return host.endsWith(".monochrome.tf")
+            || host.equals("monochrome.tf")
+            || host.equals("accounts.google.com")
+            || host.endsWith(".google.com")
+            || host.equals("discord.com")
+            || host.endsWith(".discord.com")
+            || host.equals("github.com")
+            || host.endsWith(".github.com")
+            || host.equals("auth.monochrome.tf");
     }
 
     @Override
