@@ -47,8 +47,11 @@ public class MainActivity extends BridgeActivity {
                 public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                     Uri url = request.getUrl();
                     String host = url.getHost();
-                    if (host != null && isOAuthDomain(host)) {
-                        return false;
+                    if (host != null && isOAuthDomain(host) && !host.endsWith(".monochrome.tf") && !host.equals("monochrome.tf")) {
+                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, url);
+                        browserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        view.getContext().startActivity(browserIntent);
+                        return true;
                     }
                     return originalClient.shouldOverrideUrlLoading(view, request);
                 }
