@@ -41,6 +41,9 @@ public class MainActivity extends BridgeActivity {
 
         final WebView webView = bridge.getWebView();
         if (webView != null) {
+            String ua = webView.getSettings().getUserAgentString();
+            webView.getSettings().setUserAgentString(ua.replace("; wv", ""));
+
             final WebViewClient originalClient = webView.getWebViewClient();
             webView.setWebViewClient(new WebViewClient() {
                 @Override
