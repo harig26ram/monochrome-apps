@@ -8,8 +8,6 @@ const config: CapacitorConfig = {
     url: 'https://monochrome.tf',
     allowNavigation: [
       '*.monochrome.tf',
-      'accounts.google.com',
-      '*.google.com',
       'discord.com',
       '*.discord.com',
       'github.com',
