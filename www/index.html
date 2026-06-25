@@ -52,17 +52,60 @@ button {
     transition: opacity 0.2s;
 }
 button:active { opacity: 0.7; }
+#source-status {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9998;
+    padding: 0.5rem 1rem;
+    padding-top: calc(0.5rem + env(safe-area-inset-top, 0px));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+#source-status.ok {
+    background: #002200;
+    border-bottom: 1px solid #004400;
+    color: #4ade80;
+}
+#source-status.checking {
+    background: #1a1a2e;
+    border-bottom: 1px solid #333;
+    color: #888;
+}
+#source-status.error {
+    background: #220000;
+    border-bottom: 1px solid #440000;
+    color: #f87171;
+}
+#source-status .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+#source-status.ok .status-dot { background: #4ade80; }
+#source-status.checking .status-dot { background: #888; animation: pulse 1s infinite; }
+#source-status.error .status-dot { background: #f87171; }
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
 #update-banner {
     display: none;
     position: fixed;
-    top: 0;
+    top: 28px;
     left: 0;
     right: 0;
     z-index: 9999;
     background: #1a1a2e;
     border-bottom: 1px solid #333;
     padding: 0.75rem 1rem;
-    padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
 }
 #update-banner .banner-inner {
     max-width: 600px;
@@ -108,30 +151,29 @@ button:active { opacity: 0.7; }
 #error-toast {
     display: none;
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 10000;
     background: #2d1b00;
-    border-bottom: 1px solid #5a3d00;
-    padding: 0.75rem 1rem;
-    padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
-    animation: toastIn 0.3s ease;
+    border: 1px solid #5a3d00;
+    border-radius: 12px;
+    padding: 0.75rem 1.25rem;
+    max-width: 90%;
+    animation: toastPop 0.3s ease;
 }
-@keyframes toastIn {
-    from { transform: translateY(-100%); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+@keyframes toastPop {
+    from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+    to { transform: translateX(-50%) translateY(0); opacity: 1; }
 }
 #error-toast .toast-inner {
-    max-width: 600px;
-    margin: 0 auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
 }
 #error-toast .toast-icon {
-    font-size: 1.1rem;
+    font-size: 1rem;
     flex-shrink: 0;
 }
 #error-toast .toast-text {
@@ -152,6 +194,10 @@ button:active { opacity: 0.7; }
 </style>
 </head>
 <body>
+<div id="source-status" class="checking">
+    <span class="status-dot"></span>
+    <span id="source-status-text">Checking sources...</span>
+</div>
 <div id="update-banner">
     <div class="banner-inner">
         <span class="banner-text">Update available — <strong id="update-version"></strong></span>
@@ -176,7 +222,7 @@ button:active { opacity: 0.7; }
 <p>Check your connection and try again.</p>
 <button onclick="retry()">Retry</button>
 <script>
-var CURRENT_VERSION = 'v1.1.0';
+var CURRENT_VERSION = 'v1.2.0';
 var REPO = 'monochrome-music/monochrome-apps';
 var DISMISS_KEY = 'monochrome_update_dismissed';
 var ERROR_DISMISS_KEY = 'monochrome_error_dismissed';
@@ -212,6 +258,65 @@ function showErrorToast(msg) {
     }, 6000);
 }
 
+function setSourceStatus(status, text) {
+    var el = document.getElementById('source-status');
+    var txt = document.getElementById('source-status-text');
+    el.className = status;
+    txt.textContent = text;
+}
+
+function checkSourceStatus() {
+    setSourceStatus('checking', 'Checking sources...');
+
+    var siteOk = false;
+    var apiOk = false;
+
+    function updateStatus() {
+        if (siteOk && apiOk) {
+            setSourceStatus('ok', 'Source OK');
+            setTimeout(function() {
+                document.getElementById('source-status').style.opacity = '0';
+                setTimeout(function() {
+                    document.getElementById('source-status').style.display = 'none';
+                }, 300);
+            }, 3000);
+        } else if (!siteOk && !apiOk) {
+            setSourceStatus('error', 'Source unavailable');
+        }
+    }
+
+    // Check 1: Is the site reachable?
+    fetch('https://monochrome.tf', { mode: 'no-cors', cache: 'no-store' })
+        .then(function() {
+            siteOk = true;
+            updateStatus();
+        })
+        .catch(function() {
+            siteOk = false;
+            updateStatus();
+        });
+
+    // Check 2: Try a HEAD request to detect server response
+    fetch('https://monochrome.tf', { method: 'HEAD', cache: 'no-store' })
+        .then(function(res) {
+            if (res.ok) {
+                apiOk = true;
+            }
+            updateStatus();
+        })
+        .catch(function() {
+            apiOk = false;
+            updateStatus();
+        });
+
+    // Timeout fallback - if no response in 5s, mark as error
+    setTimeout(function() {
+        if (!siteOk || !apiOk) {
+            setSourceStatus('error', 'Source slow or unavailable');
+        }
+    }, 5000);
+}
+
 function checkForUpdate() {
     try {
         if (localStorage.getItem(DISMISS_KEY) === '1') return;
@@ -231,6 +336,7 @@ function checkForUpdate() {
         .catch(function() {});
 }
 
+checkSourceStatus();
 checkForUpdate();
 </script>
 <script src="js/playback-monitor.js"></script>
