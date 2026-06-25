@@ -10,6 +10,15 @@ import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.WebViewListener;
 
 public class MainActivity extends BridgeActivity {
+    private static final String INJECT_SCRIPT =
+        "(function(){" +
+        "var s=document.createElement('script');" +
+        "s.src='file:///android_asset/public/js/inject-bundle.js';" +
+        "s.onload=function(){console.log('[HP_Monochrome] Injected script loaded');};" +
+        "s.onerror=function(){console.error('[HP_Monochrome] Failed to load inject script');};" +
+        "document.head.appendChild(s);" +
+        "})();";
+
     @Override
     public void load() {
         super.load();
@@ -36,6 +45,9 @@ public class MainActivity extends BridgeActivity {
                     "if('caches' in window){caches.keys().then(function(k){k.forEach(function(key){caches.delete(key);});});}",
                     null
                 );
+
+                // Inject our custom script bundle into the remote site
+                webView.evaluateJavascript(INJECT_SCRIPT, null);
             }
         });
 
