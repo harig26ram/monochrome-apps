@@ -12,6 +12,7 @@ const config: CapacitorConfig = {
       '*.discord.com',
       'github.com',
       '*.github.com',
+      'api.github.com',
     ],
     errorPath: 'index.html',
   },
