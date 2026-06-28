@@ -3,13 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Monochrome</title>
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>HP_Monochrome</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
     background: #000;
     color: #fff;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -20,38 +23,26 @@ body {
     padding: 2rem;
     -webkit-user-select: none;
     user-select: none;
+    overflow: hidden;
+    position: relative;
 }
-.icon {
-    width: 64px;
-    height: 64px;
-    margin-bottom: 2rem;
-    opacity: 0.4;
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 600px 400px at 30% 20%, rgba(88, 28, 135, 0.12), transparent),
+        radial-gradient(ellipse 500px 500px at 70% 80%, rgba(30, 64, 175, 0.08), transparent);
+    pointer-events: none;
+    z-index: 0;
 }
-h1 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-}
-p {
-    font-size: 0.9rem;
-    opacity: 0.5;
-    margin-bottom: 2rem;
-    max-width: 18rem;
-    line-height: 1.5;
-}
-button {
-    background: #fff;
-    color: #000;
-    border: none;
-    padding: 0.7rem 2.5rem;
-    border-radius: 999px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    transition: opacity 0.2s;
-}
-button:active { opacity: 0.7; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(16px) scale(0.96); } to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); } }
+@keyframes toastOut { from { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); } to { opacity: 0; transform: translateX(-50%) translateY(8px) scale(0.96); } }
+
+/* Status bar */
 #source-status {
     position: fixed;
     top: 0;
@@ -66,22 +57,10 @@ button:active { opacity: 0.7; }
     gap: 0.5rem;
     font-size: 0.75rem;
     font-weight: 600;
-    transition: all 0.3s ease;
-}
-#source-status.ok {
-    background: #002200;
-    border-bottom: 1px solid #004400;
-    color: #4ade80;
-}
-#source-status.checking {
-    background: #1a1a2e;
-    border-bottom: 1px solid #333;
-    color: #888;
-}
-#source-status.error {
-    background: #220000;
-    border-bottom: 1px solid #440000;
-    color: #f87171;
+    letter-spacing: 0.01em;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 #source-status .status-dot {
     width: 6px;
@@ -89,23 +68,39 @@ button:active { opacity: 0.7; }
     border-radius: 50%;
     flex-shrink: 0;
 }
-#source-status.ok .status-dot { background: #4ade80; }
-#source-status.checking .status-dot { background: #888; animation: pulse 1s infinite; }
-#source-status.error .status-dot { background: #f87171; }
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
+#source-status.checking {
+    background: rgba(26, 26, 46, 0.7);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    color: #888;
 }
+#source-status.checking .status-dot { background: #888; animation: pulse 1.2s ease-in-out infinite; }
+#source-status.ok {
+    background: rgba(0, 34, 0, 0.6);
+    border-bottom: 1px solid rgba(74, 222, 128, 0.15);
+    color: #4ade80;
+}
+#source-status.ok .status-dot { background: #4ade80; box-shadow: 0 0 8px rgba(74, 222, 128, 0.4); }
+#source-status.error {
+    background: rgba(34, 0, 0, 0.6);
+    border-bottom: 1px solid rgba(248, 113, 113, 0.15);
+    color: #f87171;
+}
+#source-status.error .status-dot { background: #f87171; box-shadow: 0 0 8px rgba(248, 113, 113, 0.4); }
+
+/* Update banner */
 #update-banner {
     display: none;
     position: fixed;
-    top: 28px;
+    top: 0;
     left: 0;
     right: 0;
     z-index: 9999;
-    background: #1a1a2e;
-    border-bottom: 1px solid #333;
-    padding: 0.75rem 1rem;
+    padding: 0.65rem 1rem;
+    padding-top: calc(0.65rem + env(safe-area-inset-top, 0px));
+    background: rgba(26, 26, 46, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 #update-banner .banner-inner {
     max-width: 600px;
@@ -116,38 +111,38 @@ button:active { opacity: 0.7; }
     gap: 0.75rem;
 }
 #update-banner .banner-text {
-    font-size: 0.85rem;
-    color: #e0e0e0;
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.7);
 }
-#update-banner .banner-text strong {
-    color: #fff;
-}
-#update-banner .banner-actions {
-    display: flex;
-    gap: 0.5rem;
-    flex-shrink: 0;
-}
+#update-banner .banner-text strong { color: #fff; font-weight: 600; }
+#update-banner .banner-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
 #update-banner .btn-download {
     background: #fff;
     color: #000;
     border: none;
-    padding: 0.4rem 1rem;
+    padding: 0.35rem 0.9rem;
     border-radius: 999px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
     cursor: pointer;
     text-decoration: none;
     display: inline-block;
+    transition: opacity 0.2s, transform 0.15s;
 }
+#update-banner .btn-download:active { opacity: 0.7; transform: scale(0.97); }
 #update-banner .btn-dismiss {
     background: transparent;
-    color: #888;
-    border: 1px solid #444;
-    padding: 0.4rem 0.8rem;
+    color: rgba(255,255,255,0.4);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 0.35rem 0.75rem;
     border-radius: 999px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     cursor: pointer;
+    transition: all 0.2s;
 }
+#update-banner .btn-dismiss:hover { border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.6); }
+
+/* Error toast */
 #error-toast {
     display: none;
     position: fixed;
@@ -155,74 +150,133 @@ button:active { opacity: 0.7; }
     left: 50%;
     transform: translateX(-50%);
     z-index: 10000;
-    background: #2d1b00;
-    border: 1px solid #5a3d00;
-    border-radius: 12px;
-    padding: 0.75rem 1.25rem;
-    max-width: 90%;
-    animation: toastPop 0.3s ease;
+    background: rgba(45, 27, 0, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(90, 61, 0, 0.4);
+    border-radius: 14px;
+    padding: 0.7rem 1.15rem;
+    max-width: 88%;
+    animation: toastIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,179,71,0.05);
 }
-@keyframes toastPop {
-    from { transform: translateX(-50%) translateY(20px); opacity: 0; }
-    to { transform: translateX(-50%) translateY(0); opacity: 1; }
+#error-toast.hiding {
+    animation: toastOut 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 #error-toast .toast-inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.75rem;
+    gap: 0.65rem;
 }
 #error-toast .toast-icon {
-    font-size: 1rem;
+    font-size: 0.9rem;
     flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(255, 179, 71, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffb347;
+    font-weight: 700;
 }
 #error-toast .toast-text {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: #ffb347;
     flex: 1;
+    line-height: 1.3;
 }
 #error-toast .toast-dismiss {
     background: transparent;
-    color: #888;
-    border: 1px solid #5a3d00;
-    padding: 0.3rem 0.7rem;
+    color: rgba(255,179,71,0.5);
+    border: 1px solid rgba(90, 61, 0, 0.3);
+    padding: 0.25rem 0.6rem;
     border-radius: 999px;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     cursor: pointer;
     flex-shrink: 0;
+    transition: all 0.2s;
+}
+#error-toast .toast-dismiss:hover { border-color: rgba(90, 61, 0, 0.6); color: #ffb347; }
+
+/* Main content */
+.hero { position: relative; z-index: 1; animation: fadeIn 0.6s ease-out; }
+.icon {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 1.75rem;
+    opacity: 0.3;
+    filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.15));
+}
+h1 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.01em;
+}
+p {
+    font-size: 0.85rem;
+    opacity: 0.4;
+    margin-bottom: 2rem;
+    max-width: 16rem;
+    line-height: 1.55;
+}
+.retry-btn {
+    background: #fff;
+    color: #000;
+    border: none;
+    padding: 0.65rem 2.25rem;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 12px rgba(255,255,255,0.08);
+}
+.retry-btn:hover { box-shadow: 0 4px 20px rgba(255,255,255,0.12); }
+.retry-btn:active { opacity: 0.7; transform: scale(0.97); }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
 </style>
 </head>
 <body>
-<div id="source-status" class="checking">
+<div id="source-status" class="checking" role="status" aria-live="polite">
     <span class="status-dot"></span>
     <span id="source-status-text">Checking sources...</span>
 </div>
-<div id="update-banner">
+<div id="update-banner" role="status" aria-live="polite">
     <div class="banner-inner">
         <span class="banner-text">Update available — <strong id="update-version"></strong></span>
         <div class="banner-actions">
-            <a id="update-link" href="#" target="_blank" class="btn-download">Download</a>
-            <button class="btn-dismiss" onclick="dismissUpdate()">Dismiss</button>
+            <a id="update-link" href="#" target="_blank" class="btn-download" rel="noopener">Download</a>
+            <button class="btn-dismiss" aria-label="Dismiss update notification" onclick="dismissUpdate()">Dismiss</button>
         </div>
     </div>
 </div>
-<div id="error-toast">
+<div id="error-toast" role="alert" aria-live="assertive">
     <div class="toast-inner">
-        <span class="toast-icon">!</span>
+        <span class="toast-icon" aria-hidden="true">!</span>
         <span class="toast-text" id="error-toast-msg">Playback issue detected</span>
-        <button class="toast-dismiss" onclick="dismissError()">OK</button>
+        <button class="toast-dismiss" aria-label="Dismiss error" onclick="dismissError()">OK</button>
     </div>
 </div>
-<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
-<path d="M0 0h24v24H0z" fill="none" />
-<path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M2.1 9.1A13.94 13.94 0 0 1 8 5.582m8 0a13.94 13.94 0 0 1 5.9 3.52M6.697 13.697q.607-.604 1.303-1.043m8 0q.697.438 1.303 1.043M12 3v11m-.707 4.293a 1 1 0 0 1 1.414 0L12 19z" />
-</svg>
-<h1>No internet connection</h1>
-<p>Check your connection and try again.</p>
-<button onclick="retry()">Retry</button>
+<div class="hero">
+    <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M0 0h24v24H0z" fill="none" />
+        <path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M2.1 9.1A13.94 13.94 0 0 1 8 5.582m8 0a13.94 13.94 0 0 1 5.9 3.52M6.697 13.697q.607-.604 1.303-1.043m8 0q.697.438 1.303 1.043M12 3v11m-.707 4.293a 1 1 0 0 1 1.414 0L12 19z" />
+    </svg>
+    <h1>No internet connection</h1>
+    <p>Check your connection and try again.</p>
+    <button class="retry-btn" aria-label="Retry connection" onclick="retry()">Retry</button>
+</div>
 <script>
-var CURRENT_VERSION = 'v1.3.0';
+var CURRENT_VERSION = 'v1.6.0';
 var REPO = 'monochrome-music/monochrome-apps';
 var DISMISS_KEY = 'monochrome_update_dismissed';
 var ERROR_DISMISS_KEY = 'monochrome_error_dismissed';
@@ -236,13 +290,18 @@ function retry() {
 window.addEventListener('online', retry);
 
 function dismissUpdate() {
-    document.getElementById('update-banner').style.display = 'none';
+    var el = document.getElementById('update-banner');
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(-100%)';
+    setTimeout(function() { el.style.display = 'none'; }, 250);
     try { localStorage.setItem(DISMISS_KEY, '1'); } catch(e) {}
 }
 
 function dismissError() {
-    document.getElementById('error-toast').style.display = 'none';
+    var el = document.getElementById('error-toast');
+    el.classList.add('hiding');
     if (errorToastTimeout) clearTimeout(errorToastTimeout);
+    setTimeout(function() { el.style.display = 'none'; el.classList.remove('hiding'); }, 250);
 }
 
 function showErrorToast(msg) {
@@ -252,10 +311,9 @@ function showErrorToast(msg) {
     var toast = document.getElementById('error-toast');
     document.getElementById('error-toast-msg').textContent = msg || 'Playback issue detected';
     toast.style.display = 'block';
+    toast.classList.remove('hiding');
     if (errorToastTimeout) clearTimeout(errorToastTimeout);
-    errorToastTimeout = setTimeout(function() {
-        toast.style.display = 'none';
-    }, 6000);
+    errorToastTimeout = setTimeout(function() { dismissError(); }, 6000);
 }
 
 function setSourceStatus(status, text) {
@@ -267,53 +325,27 @@ function setSourceStatus(status, text) {
 
 function checkSourceStatus() {
     setSourceStatus('checking', 'Checking sources...');
-
-    var siteOk = false;
-    var apiOk = false;
-
+    var siteOk = false, apiOk = false;
     function updateStatus() {
         if (siteOk && apiOk) {
             setSourceStatus('ok', 'Source OK');
             setTimeout(function() {
-                document.getElementById('source-status').style.opacity = '0';
-                setTimeout(function() {
-                    document.getElementById('source-status').style.display = 'none';
-                }, 300);
-            }, 3000);
+                var el = document.getElementById('source-status');
+                el.style.opacity = '0';
+                setTimeout(function() { el.style.display = 'none'; }, 400);
+            }, 2500);
         } else if (!siteOk && !apiOk) {
             setSourceStatus('error', 'Source unavailable');
         }
     }
-
-    // Check 1: Is the site reachable?
     fetch('https://monochrome.tf', { mode: 'no-cors', cache: 'no-store' })
-        .then(function() {
-            siteOk = true;
-            updateStatus();
-        })
-        .catch(function() {
-            siteOk = false;
-            updateStatus();
-        });
-
-    // Check 2: Try a HEAD request to detect server response
+        .then(function() { siteOk = true; updateStatus(); })
+        .catch(function() { siteOk = false; updateStatus(); });
     fetch('https://monochrome.tf', { method: 'HEAD', cache: 'no-store' })
-        .then(function(res) {
-            if (res.ok) {
-                apiOk = true;
-            }
-            updateStatus();
-        })
-        .catch(function() {
-            apiOk = false;
-            updateStatus();
-        });
-
-    // Timeout fallback - if no response in 5s, mark as error
+        .then(function(res) { if (res.ok) apiOk = true; updateStatus(); })
+        .catch(function() { apiOk = false; updateStatus(); });
     setTimeout(function() {
-        if (!siteOk || !apiOk) {
-            setSourceStatus('error', 'Source slow or unavailable');
-        }
+        if (!siteOk || !apiOk) setSourceStatus('error', 'Source slow or unavailable');
     }, 5000);
 }
 
@@ -327,8 +359,7 @@ function checkForUpdate() {
             return res.json();
         })
         .then(function(data) {
-            if (!data.tag_name) return;
-            if (data.tag_name === CURRENT_VERSION) return;
+            if (!data.tag_name || data.tag_name === CURRENT_VERSION) return;
             document.getElementById('update-version').textContent = data.tag_name;
             document.getElementById('update-link').href = data.html_url;
             document.getElementById('update-banner').style.display = 'block';
@@ -339,6 +370,5 @@ function checkForUpdate() {
 checkSourceStatus();
 checkForUpdate();
 </script>
-<script src="js/playback-monitor.js"></script>
 </body>
 </html>

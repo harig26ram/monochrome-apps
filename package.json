@@ -1,11 +1,8 @@
 {
-  "name": "monochrome-apps",
-  "module": "index.ts",
-  "type": "module",
+  "name": "hp-monochrome",
   "private": true,
   "devDependencies": {
-    "@capacitor/assets": "^3.0.5",
-    "@types/bun": "latest"
+    "@capacitor/assets": "^3.0.5"
   },
   "peerDependencies": {
     "typescript": "^5"

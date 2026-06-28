@@ -112,15 +112,11 @@ public class MainActivity extends BridgeActivity {
     }
 
     private static boolean isOAuthDomain(String host) {
-        return host.endsWith(".monochrome.tf")
-            || host.equals("monochrome.tf")
-            || host.equals("accounts.google.com")
+        return host.equals("monochrome.tf")
+            || host.endsWith(".monochrome.tf")
             || host.endsWith(".google.com")
-            || host.equals("discord.com")
             || host.endsWith(".discord.com")
-            || host.equals("github.com")
-            || host.endsWith(".github.com")
-            || host.equals("auth.monochrome.tf");
+            || host.endsWith(".github.com");
     }
 
     @Override
@@ -142,7 +138,7 @@ public class MainActivity extends BridgeActivity {
                         });
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    android.util.Log.e("HP_Monochrome", "OAuth callback failed", e);
                 }
             }
         }
